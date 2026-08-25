@@ -13,7 +13,7 @@ services:
     name: savoury
     runtime: node
     plan: free
-    buildCommand: npm install && npm run build
+    buildCommand: npm install && npx prisma generate && npm run build
     # Free tier : pas de preDeployCommand -> migrations + buckets au démarrage
     # (idempotent : prisma ignore les migrations déjà appliquées)
     startCommand: npx prisma migrate deploy && node scripts/ensure-buckets.mjs && npm start
