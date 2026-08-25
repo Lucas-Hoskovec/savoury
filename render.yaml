@@ -1,0 +1,37 @@
+# Render Blueprint — déploie l'app Next.js, la base et le stockage restent sur Supabase.
+# Utilisation : New + Blueprint (ou "Deploy to Render") depuis un repo GitHub.
+# Ensuite, renseigne dans l'onglet Environment les variables marquées sync: false :
+#   - DATABASE_URL              : chaîne de connexion PostgreSQL de ton projet Supabase
+#                                 (identique à celle du .env local)
+#   - NEXT_PUBLIC_SUPABASE_URL  : URL du projet Supabase
+#   - NEXT_PUBLIC_SUPABASE_ANON_KEY : clé anon publique
+#   - SUPABASE_SERVICE_ROLE_KEY : clé service role (jamais côté client)
+#   - NEXT_PUBLIC_GTAG_ID / NEXT_PUBLIC_ADS_ID : optionnels (Analytics / Ads)
+
+services:
+  - type: web
+    name: savoury
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    preDeployCommand: npx prisma migrate deploy && node scripts/ensure-buckets.mjs
+    healthCheckPath: /
+    autoDeploy: true
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: AUTH_SECRET
+        generateValue: true
+      - key: DATABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_URL
+        sync: false
+      - key: NEXT_PUBLIC_SUPABASE_ANON_KEY
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: NEXT_PUBLIC_GTAG_ID
+        sync: false
+      - key: NEXT_PUBLIC_ADS_ID
+        sync: false
