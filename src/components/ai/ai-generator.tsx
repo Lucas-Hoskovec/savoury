@@ -39,13 +39,6 @@ export type AiHistoryItem = AiGenerated & {
   createdAt: string;
 };
 
-const WAITING_MESSAGES = [
-  "Le chef réfléchit…",
-  "On goûte les associations…",
-  "On ajuste l'assaisonnement…",
-  "Dernière touche avant le dressage…",
-];
-
 const GLASS =
   "bg-card/60 border border-border/50 backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.07)]";
 
@@ -55,14 +48,12 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<AiGenerated | null>(null);
   const [history, setHistory] = useState<AiHistoryItem[]>(initialHistory);
-  const [waitingIndex, setWaitingIndex] = useState(0);
   const [publishOpen, setPublishOpen] = useState(false);
 
   async function generate(p: string) {
     if (!p.trim() || loading) return;
     setLoading(true);
     setError(null);
-    setWaitingIndex((i) => i + 1);
     try {
       const res = await fetch("/api/ai", {
         method: "POST",
@@ -112,7 +103,13 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
         <Textarea
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Décris ton envie : un plat, des ingrédients, une humeur…"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && !e.shiftKey) {
+              e.preventDefault();
+              void generate(prompt);
+            }
+          }}
+          placeholder="Décris ton envie : un plat, des ingrédients, une humeur… (Entrée pour générer, Maj+Entrée pour un retour à la ligne)"
           rows={3}
           maxLength={500}
           aria-label="Décris la recette que tu veux"
@@ -129,7 +126,7 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
             {loading ? (
               <>
                 <Loader2 className="mr-2 size-4 animate-spin" />
-                {WAITING_MESSAGES[waitingIndex % WAITING_MESSAGES.length]}
+                Génération…
               </>
             ) : (
               <>
@@ -140,23 +137,10 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
         </div>
       </div>
 
-      {/* Exemples supprimés */}
-
       {error && (
         <p className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
           {error}
         </p>
-      )}
-
-      {loading && (
-        <div className={cn("flex flex-col items-center gap-4 rounded-[1.75rem] px-6 py-14", GLASS)}>
-          <span className="grid size-16 animate-pulse place-items-center rounded-full bg-primary/10">
-            <Sparkles className="size-8 animate-pulse text-primary" />
-          </span>
-          <p className="text-sm font-medium text-muted-foreground">
-            {WAITING_MESSAGES[waitingIndex % WAITING_MESSAGES.length]}
-          </p>
-        </div>
       )}
 
       {history.length > 0 && (
