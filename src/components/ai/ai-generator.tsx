@@ -113,111 +113,164 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
     setResult(item);
   }
 
+  const [tab, setTab] = useState<"generate" | "history">("generate");
+
   return (
-    <div className="space-y-6">
-      {/* Panneau de saisie */}
-      <div className={cn("rounded-[1.75rem] p-2", GLASS)}>
-        <Textarea
-          value={prompt}
-          onChange={(e) => setPrompt(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              void generate(prompt);
-            }
-          }}
-          placeholder="Décris ton envie : un plat, des ingrédients, une humeur… (Entrée pour générer, Maj+Entrée pour un retour à la ligne)"
-          rows={3}
-          maxLength={500}
-          aria-label="Décris la recette que tu veux"
-          className="resize-none border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
-        />
-        <div className="flex items-end justify-between gap-3 px-2 pb-1">
-          <span className="pb-2 text-xs text-muted-foreground">{prompt.length}/500</span>
-          <div className="flex items-center gap-2">
-            {voice.isListening && (
-              <span className="flex items-center gap-1 pb-2" aria-label="Dictée en cours">
-                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.3s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.15s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-destructive" />
-              </span>
+    <div className="mx-auto flex min-h-[calc(100dvh-9rem)] max-w-2xl flex-col px-4 py-6">
+      {/* Onglets */}
+      <div className="mb-6 flex items-center justify-center">
+        <div className="flex items-center gap-1 rounded-full border border-border/50 bg-card/60 p-1 backdrop-blur-xl">
+          <button
+            type="button"
+            onClick={() => setTab("generate")}
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-medium transition",
+              tab === "generate"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
-            {voice.supported && (
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => {
-                  if (voice.isListening) voice.stop();
-                  else {
-                    dictationBase.current = prompt;
-                    voice.start();
-                  }
-                }}
-                aria-label={voice.isListening ? "Arrêter la dictée" : "Dicter la requête"}
-                className={cn(
-                  "size-10 rounded-full",
-                  voice.isListening && "animate-pulse bg-destructive/15 text-destructive hover:bg-destructive/20"
-                )}
-              >
-                {voice.isListening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
-              </Button>
+          >
+            Générer
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("history")}
+            className={cn(
+              "rounded-full px-4 py-2 text-sm font-medium transition",
+              tab === "history"
+                ? "bg-primary text-primary-foreground"
+                : "text-muted-foreground hover:text-foreground"
             )}
-            <Button
-              onClick={() => void generate(prompt)}
-              disabled={loading || !prompt.trim()}
-              size="lg"
-              className="pressable rounded-full px-6"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Génération…
-                </>
-              ) : (
-                <>
-                  <Sparkles className="mr-2 size-4" /> Générer
-                </>
-              )}
-            </Button>
-          </div>
+          >
+            Historique des générations
+          </button>
         </div>
       </div>
 
-      {error && (
-        <p className="rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
-          {error}
-        </p>
-      )}
+      {tab === "generate" ? (
+        <div className="flex flex-1 flex-col">
+          {/* Marque centrée, sans contour */}
+          <div className="flex flex-1 flex-col items-center justify-center gap-5 px-2 text-center">
+            <span className="grid size-20 place-items-center rounded-full bg-primary/10">
+              <ChefHat className="size-10 text-primary" />
+            </span>
+            <h1 className="font-display text-3xl font-bold tracking-tight">Savoury AI</h1>
+            <p className="max-w-xs text-sm text-muted-foreground">
+              Décris une envie : le chef invente la recette.
+            </p>
+          </div>
 
-      {history.length > 0 && (
-        <section>
-          <h2 className="mb-3 px-1 text-sm font-semibold text-muted-foreground">Générations récentes</h2>
-          <ul className={cn("divide-y divide-border/40 overflow-hidden rounded-[1.75rem]", GLASS)}>
-            {history.map((item) => (
-              <li key={item.id} className="flex items-center gap-1 pl-2 pr-1">
-                <button
-                  type="button"
-                  onClick={() => loadFromHistory(item)}
-                  className="min-w-0 flex-1 py-3 pr-2 text-left"
-                >
-                  <p className="truncate text-[15px] font-medium">{item.title}</p>
-                  <p className="truncate text-xs text-muted-foreground">{item.prompt}</p>
-                </button>
+          {error && (
+            <p className="mb-2 rounded-2xl border border-destructive/40 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
+          {/* Bloc de communication en bas */}
+          <div className={cn("rounded-[1.75rem] p-2", GLASS)}>
+            <Textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  void generate(prompt);
+                }
+              }}
+              placeholder="Décris ton envie : un plat, des ingrédients, une humeur… (Entrée pour générer, Maj+Entrée pour un retour à la ligne)"
+              rows={3}
+              maxLength={500}
+              aria-label="Décris la recette que tu veux"
+              className="resize-none border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
+            />
+            <div className="flex items-end justify-between gap-3 px-2 pb-1">
+              <span className="pb-2 text-xs text-muted-foreground">{prompt.length}/500</span>
+              <div className="flex items-center gap-2">
+                {voice.isListening && (
+                  <span className="flex items-center gap-1 pb-2" aria-label="Dictée en cours">
+                    <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.3s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.15s]" />
+                    <span className="size-1.5 animate-bounce rounded-full bg-destructive" />
+                  </span>
+                )}
+                {voice.supported && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      if (voice.isListening) voice.stop();
+                      else {
+                        dictationBase.current = prompt;
+                        voice.start();
+                      }
+                    }}
+                    aria-label={voice.isListening ? "Arrêter la dictée" : "Dicter la requête"}
+                    className={cn(
+                      "size-10 rounded-full",
+                      voice.isListening && "animate-pulse bg-destructive/15 text-destructive hover:bg-destructive/20"
+                    )}
+                  >
+                    {voice.isListening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
+                  </Button>
+                )}
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="size-9 shrink-0 text-muted-foreground hover:text-destructive"
-                  onClick={() => void removeFromHistory(item.id)}
-                  aria-label={`Supprimer ${item.title} de l'historique`}
+                  onClick={() => void generate(prompt)}
+                  disabled={loading || !prompt.trim()}
+                  size="lg"
+                  className="pressable rounded-full px-6"
                 >
-                  <Trash2 className="size-4" />
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      Génération…
+                    </>
+                  ) : (
+                    <>
+                      <Sparkles className="mr-2 size-4" /> Générer
+                    </>
+                  )}
                 </Button>
-                <ChevronRight className="mr-2 size-4 shrink-0 text-muted-foreground/50" />
-              </li>
-            ))}
-          </ul>
-        </section>
+              </div>
+            </div>
+          </div>
+        </div>
+      ) : (
+        <div className="flex-1 py-2">
+          {history.length > 0 ? (
+            <section>
+              <h2 className="mb-3 px-1 text-sm font-semibold text-muted-foreground">
+                Générations récentes
+              </h2>
+              <ul className={cn("divide-y divide-border/40 overflow-hidden rounded-[1.75rem]", GLASS)}>
+                {history.map((item) => (
+                  <li key={item.id} className="flex items-center gap-1 pl-2 pr-1">
+                    <button
+                      type="button"
+                      onClick={() => loadFromHistory(item)}
+                      className="min-w-0 flex-1 py-3 pr-2 text-left"
+                    >
+                      <p className="truncate text-[15px] font-medium">{item.title}</p>
+                      <p className="truncate text-xs text-muted-foreground">{item.prompt}</p>
+                    </button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="size-9 shrink-0 text-muted-foreground hover:text-destructive"
+                      onClick={() => void removeFromHistory(item.id)}
+                      aria-label={`Supprimer ${item.title} de l'historique`}
+                    >
+                      <Trash2 className="size-4" />
+                    </Button>
+                    <ChevronRight className="mr-2 size-4 shrink-0 text-muted-foreground/50" />
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ) : (
+            <p className="px-1 text-sm text-muted-foreground">Aucune génération pour l’instant.</p>
+          )}
+        </div>
       )}
 
       {result && (

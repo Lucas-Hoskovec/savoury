@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Sparkles } from "lucide-react";
 import { prisma } from "@/lib/prisma";
 import { getSession } from "@/lib/auth";
 import { AiGenerator, type AiHistoryItem } from "@/components/ai/ai-generator";
@@ -54,20 +53,5 @@ export default async function AiPage() {
     createdAt: h.createdAt.toISOString(),
   }));
 
-  return (
-    <div className="mx-auto max-w-2xl px-4 py-6">
-      <div className="mb-6 flex items-center gap-4 rounded-[1.75rem] border border-border/50 bg-card/60 p-5 shadow-[0_12px_40px_rgba(0,0,0,0.07)] backdrop-blur-xl">
-        <span className="grid size-14 shrink-0 place-items-center rounded-full bg-primary/10">
-          <Sparkles className="size-7 text-primary" />
-        </span>
-        <div>
-          <h1 className="font-display text-2xl font-bold tracking-tight">Savoury AI</h1>
-          <p className="text-sm text-muted-foreground">
-            Décris une envie : le chef invente la recette.
-          </p>
-        </div>
-      </div>
-      <AiGenerator initialHistory={initialHistory} />
-    </div>
-  );
+  return <AiGenerator initialHistory={initialHistory} />;
 }
