@@ -133,7 +133,15 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
           className="resize-none border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
         />
         <div className="flex items-end justify-between gap-3 px-2 pb-1">
+          <span className="pb-2 text-xs text-muted-foreground">{prompt.length}/500</span>
           <div className="flex items-center gap-2">
+            {voice.isListening && (
+              <span className="flex items-center gap-1 pb-2" aria-label="Dictée en cours">
+                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.3s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.15s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-destructive" />
+              </span>
+            )}
             {voice.supported && (
               <Button
                 type="button"
@@ -155,34 +163,24 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
                 {voice.isListening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
               </Button>
             )}
-            {voice.isListening && (
-              <span className="flex items-center gap-1 pb-2" aria-label="Dictée en cours">
-                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.3s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.15s]" />
-                <span className="size-1.5 animate-bounce rounded-full bg-destructive" />
-              </span>
-            )}
-            <span className={cn("pb-2 text-xs text-muted-foreground", voice.isListening && "text-destructive")}>
-              {voice.isListening ? "À l'écoute…" : `${prompt.length}/500`}
-            </span>
+            <Button
+              onClick={() => void generate(prompt)}
+              disabled={loading || !prompt.trim()}
+              size="lg"
+              className="pressable rounded-full px-6"
+            >
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Génération…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="mr-2 size-4" /> Générer
+                </>
+              )}
+            </Button>
           </div>
-          <Button
-            onClick={() => void generate(prompt)}
-            disabled={loading || !prompt.trim()}
-            size="lg"
-            className="pressable rounded-full px-6"
-          >
-            {loading ? (
-              <>
-                <Loader2 className="mr-2 size-4 animate-spin" />
-                Génération…
-              </>
-            ) : (
-              <>
-                <Sparkles className="mr-2 size-4" /> Générer
-              </>
-            )}
-          </Button>
         </div>
       </div>
 
