@@ -53,6 +53,22 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
   const [history, setHistory] = useState<AiHistoryItem[]>(initialHistory);
   const [publishOpen, setPublishOpen] = useState(false);
   const dictationBase = useRef("");
+  const taRef = useRef<HTMLTextAreaElement>(null);
+
+  const resizeTextarea = () => {
+    const ta = taRef.current;
+    if (!ta) return;
+    ta.style.height = "auto";
+    const cs = getComputedStyle(ta);
+    const lh = parseFloat(cs.lineHeight) || 24;
+    const paddingY = parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom);
+    const one = lh + paddingY;
+    const two = lh * 2 + paddingY;
+    ta.style.height = Math.min(Math.max(ta.scrollHeight, one), two) + "px";
+  };
+  useEffect(() => {
+    resizeTextarea();
+  });
 
   const voice = useVoice({
     lang: "fr-FR",
@@ -178,9 +194,10 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
                 }
               }}
           placeholder="Décris ton envie : un plat, des ingrédients, une humeur…"
+          ref={taRef}
           rows={1}
           maxLength={500}
-          style={{ minHeight: "44px", maxHeight: "72px" } as React.CSSProperties}
+          style={{ fieldSizing: "fixed" } as React.CSSProperties}
           aria-label="Décris la recette que tu veux"
           className="resize-none overflow-y-auto border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
             />
