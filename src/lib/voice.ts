@@ -22,6 +22,7 @@ interface UseVoiceOptions {
   lang?: string;
   continuous?: boolean;
   onFinal?: (text: string) => void;
+  onTranscript?: (text: string) => void;
 }
 
 /** Reactive wrapper around the built-in Web Speech API (no external keys). */
@@ -41,8 +42,10 @@ export function useVoice(options: UseVoiceOptions = {}) {
   const finalRef = useRef("");
   const recRef = useRef<SpeechRecognitionLike | null>(null);
   const onFinalRef = useRef(options.onFinal);
+  const onTranscriptRef = useRef(options.onTranscript);
   useEffect(() => {
     onFinalRef.current = options.onFinal;
+    onTranscriptRef.current = options.onTranscript;
   });
 
   useEffect(() => {
@@ -60,12 +63,14 @@ export function useVoice(options: UseVoiceOptions = {}) {
     rec.lang = options.lang ?? "fr-FR";
 
     rec.onresult = (event) => {
-      let finalText = finalRef.current;
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      let text = "";
+      for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i];
-        if (result.isFinal) finalText += result[0].transcript + " ";
+        text += result[0].transcript;
+        if (result.isFinal) text += " ";
       }
-      finalRef.current = finalText;
+      finalRef.current = text.trim();
+      onTranscriptRef.current?.(text.trim());
     };
 
     rec.onend = () => {

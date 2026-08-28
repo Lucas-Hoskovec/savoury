@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   ArrowLeft,
   ChefHat,
@@ -52,10 +52,19 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
   const [result, setResult] = useState<AiGenerated | null>(null);
   const [history, setHistory] = useState<AiHistoryItem[]>(initialHistory);
   const [publishOpen, setPublishOpen] = useState(false);
+  const dictationBase = useRef("");
 
   const voice = useVoice({
     lang: "fr-FR",
-    onFinal: (text) => setPrompt((prev) => (prev ? `${prev} ${text}` : text).trim()),
+    onTranscript: (text) => {
+      const base = dictationBase.current;
+      setPrompt((base ? `${base} ` : "") + text);
+    },
+    onFinal: (text) => {
+      const base = dictationBase.current;
+      setPrompt((base ? `${base} ` : "") + text);
+      dictationBase.current = "";
+    },
   });
 
   async function generate(p: string) {
@@ -130,7 +139,13 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
                 type="button"
                 variant="ghost"
                 size="icon"
-                onClick={() => (voice.isListening ? voice.stop() : voice.start())}
+                onClick={() => {
+                  if (voice.isListening) voice.stop();
+                  else {
+                    dictationBase.current = prompt;
+                    voice.start();
+                  }
+                }}
                 aria-label={voice.isListening ? "Arrêter la dictée" : "Dicter la requête"}
                 className={cn(
                   "size-10 rounded-full",
@@ -140,7 +155,16 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
                 {voice.isListening ? <MicOff className="size-5" /> : <Mic className="size-5" />}
               </Button>
             )}
-            <span className="pb-2 text-xs text-muted-foreground">{prompt.length}/500</span>
+            {voice.isListening && (
+              <span className="flex items-center gap-1 pb-2" aria-label="Dictée en cours">
+                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.3s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.15s]" />
+                <span className="size-1.5 animate-bounce rounded-full bg-destructive" />
+              </span>
+            )}
+            <span className={cn("pb-2 text-xs text-muted-foreground", voice.isListening && "text-destructive")}>
+              {voice.isListening ? "À l'écoute…" : `${prompt.length}/500`}
+            </span>
           </div>
           <Button
             onClick={() => void generate(prompt)}
