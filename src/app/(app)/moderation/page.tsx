@@ -18,6 +18,7 @@ export default async function ModerationPage() {
       take: 50,
       include: {
         reporter: { select: { username: true } },
+        assignedTo: { select: { username: true } },
         recipe: { select: { id: true, title: true, imageUrl: true } },
         comment: { select: { id: true, body: true } },
         message: { select: { id: true, body: true } },
@@ -31,6 +32,7 @@ export default async function ModerationPage() {
       include: {
         reporter: { select: { username: true } },
         resolvedBy: { select: { username: true } },
+        assignedTo: { select: { username: true } },
         recipe: { select: { id: true, title: true, imageUrl: true } },
         comment: { select: { id: true, body: true } },
         message: { select: { id: true, body: true } },

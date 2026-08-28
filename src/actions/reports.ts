@@ -15,6 +15,38 @@ type CreateReportInput = {
   details?: string;
 };
 
+/** Pick the admin with the fewest pending assigned reports. */
+async function pickAssigneeId(): Promise<string | null> {
+  const admins = await prisma.user.findMany({
+    where: { role: "ADMIN", suspended: false },
+    select: { id: true },
+  });
+  if (admins.length === 0) return null;
+
+  const counts = await prisma.report.groupBy({
+    by: ["assignedToId"],
+    where: { status: "PENDING", assignedToId: { in: admins.map((a) => a.id) } },
+    _count: { _all: true },
+  });
+
+  const load = new Map<string, number>();
+  for (const a of admins) load.set(a.id, 0);
+  for (const c of counts) {
+    if (c.assignedToId) load.set(c.assignedToId, c._count._all);
+  }
+
+  let best: string | null = null;
+  let bestCount = Infinity;
+  for (const a of admins) {
+    const n = load.get(a.id) ?? 0;
+    if (n < bestCount) {
+      bestCount = n;
+      best = a.id;
+    }
+  }
+  return best;
+}
+
 export async function createReport(
   input: CreateReportInput
 ): Promise<{ ok: true } | { error: string }> {
@@ -61,6 +93,8 @@ export async function createReport(
   });
   if (existing) return { error: "Tu as déjà signalé ce contenu" };
 
+  const assignedToId = await pickAssigneeId();
+
   await prisma.report.create({
     data: {
       reporterId: session.userId,
@@ -70,6 +104,7 @@ export async function createReport(
       commentId,
       messageId,
       userId,
+      assignedToId,
     },
   });
 

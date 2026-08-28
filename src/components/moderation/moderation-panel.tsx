@@ -18,6 +18,7 @@ export type ReportItem = {
   createdAt: string;
   reporter: { username: string };
   resolvedBy?: { username: string } | null;
+  assignedTo?: { username: string } | null;
   recipe?: { id: string; title: string; imageUrl: string } | null;
   comment?: { id: string; body: string } | null;
   message?: { id: string; body: string } | null;
@@ -164,7 +165,10 @@ function ReportCard({
         </div>
         <span className="text-xs text-muted-foreground">
           {timeAgo(r.createdAt)}
-          {r.resolvedBy ? ` · par @${r.resolvedBy.username}` : ` · signalé par @${r.reporter.username}`}
+          {r.resolvedBy
+            ? ` · traité par @${r.resolvedBy.username}`
+            : ` · signalé par @${r.reporter.username}`}
+          {r.assignedTo ? ` · assigné à @${r.assignedTo.username}` : ""}
         </span>
       </div>
 

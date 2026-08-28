@@ -29,6 +29,7 @@ model User {
   reportsSent    Report[] @relation("Reporter")
   reportsReceived Report[] @relation("ReportedUser")
   reportsResolved Report[] @relation("Resolver")
+  reportsAssigned Report[] @relation("AssignedReports")
   aiRecipes      AiRecipe[]
 }
 
@@ -63,9 +64,12 @@ model Report {
   message        Message?     @relation(fields: [messageId], references: [id], onDelete: SetNull)
   userId         String?
   user           User?        @relation("ReportedUser", fields: [userId], references: [id], onDelete: SetNull)
+  assignedToId   String?
+  assignedTo     User?        @relation("AssignedReports", fields: [assignedToId], references: [id], onDelete: SetNull)
 
   @@index([status, createdAt])
   @@index([reporterId])
+  @@index([assignedToId])
 }
 
 model Recipe {
