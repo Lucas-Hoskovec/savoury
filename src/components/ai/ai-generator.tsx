@@ -182,7 +182,7 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
           maxLength={500}
           style={{ fieldSizing: "fixed" } as React.CSSProperties}
           aria-label="Décris la recette que tu veux"
-          className="h-24 resize-none overflow-y-auto border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
+          className="resize-none overflow-y-auto border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
             />
             <div className="flex items-end justify-between gap-3 px-2 pb-1">
               <span className="pb-2 text-xs text-muted-foreground">{prompt.length}/500</span>
