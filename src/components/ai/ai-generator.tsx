@@ -116,7 +116,7 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
   const [tab, setTab] = useState<"generate" | "history">("generate");
 
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-9rem)] max-w-2xl flex-col px-4 py-6">
+    <div className="mx-auto flex h-[calc(100dvh-9rem)] max-w-2xl flex-col overflow-hidden px-4 py-6">
       {/* Onglets */}
       <div className="mb-6 flex items-center justify-center">
         <div className="flex items-center gap-1 rounded-full border border-border/50 bg-card/60 p-1 backdrop-blur-xl">
@@ -142,7 +142,7 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
                 : "text-muted-foreground hover:text-foreground"
             )}
           >
-            Historique des générations
+            Historique
           </button>
         </div>
       </div>
@@ -177,17 +177,18 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
                   void generate(prompt);
                 }
               }}
-              placeholder="Décris ton envie : un plat, des ingrédients, une humeur… (Entrée pour générer, Maj+Entrée pour un retour à la ligne)"
-              rows={3}
-              maxLength={500}
-              aria-label="Décris la recette que tu veux"
-              className="resize-none border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
+          placeholder="Décris ton envie : un plat, des ingrédients, une humeur…"
+          rows={3}
+          maxLength={500}
+          style={{ fieldSizing: "fixed" } as React.CSSProperties}
+          aria-label="Décris la recette que tu veux"
+          className="h-24 resize-none overflow-y-auto border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
             />
             <div className="flex items-end justify-between gap-3 px-2 pb-1">
               <span className="pb-2 text-xs text-muted-foreground">{prompt.length}/500</span>
               <div className="flex items-center gap-2">
                 {voice.isListening && (
-                  <span className="flex items-center gap-1 pb-2" aria-label="Dictée en cours">
+                  <span className="flex items-center gap-1" aria-label="Dictée en cours">
                     <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.3s]" />
                     <span className="size-1.5 animate-bounce rounded-full bg-destructive [animation-delay:-0.15s]" />
                     <span className="size-1.5 animate-bounce rounded-full bg-destructive" />
@@ -236,37 +237,33 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
           </div>
         </div>
       ) : (
-        <div className="flex-1 py-2">
+        <div className="flex-1 space-y-3 overflow-y-auto py-2">
           {history.length > 0 ? (
-            <section>
-              <h2 className="mb-3 px-1 text-sm font-semibold text-muted-foreground">
-                Générations récentes
-              </h2>
-              <ul className={cn("divide-y divide-border/40 overflow-hidden rounded-[1.75rem]", GLASS)}>
-                {history.map((item) => (
-                  <li key={item.id} className="flex items-center gap-1 pl-2 pr-1">
-                    <button
-                      type="button"
-                      onClick={() => loadFromHistory(item)}
-                      className="min-w-0 flex-1 py-3 pr-2 text-left"
-                    >
-                      <p className="truncate text-[15px] font-medium">{item.title}</p>
-                      <p className="truncate text-xs text-muted-foreground">{item.prompt}</p>
-                    </button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="size-9 shrink-0 text-muted-foreground hover:text-destructive"
-                      onClick={() => void removeFromHistory(item.id)}
-                      aria-label={`Supprimer ${item.title} de l'historique`}
-                    >
-                      <Trash2 className="size-4" />
-                    </Button>
-                    <ChevronRight className="mr-2 size-4 shrink-0 text-muted-foreground/50" />
-                  </li>
-                ))}
-              </ul>
-            </section>
+            history.map((item) => (
+              <div
+                key={item.id}
+                className={cn("flex items-center gap-1 rounded-[1.75rem] p-2 pl-3", GLASS)}
+              >
+                <button
+                  type="button"
+                  onClick={() => loadFromHistory(item)}
+                  className="min-w-0 flex-1 py-2 text-left"
+                >
+                  <p className="truncate text-[15px] font-medium">{item.title}</p>
+                  <p className="truncate text-xs text-muted-foreground">{item.prompt}</p>
+                </button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-9 shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => void removeFromHistory(item.id)}
+                  aria-label={`Supprimer ${item.title} de l'historique`}
+                >
+                  <Trash2 className="size-4" />
+                </Button>
+                <ChevronRight className="mr-2 size-4 shrink-0 text-muted-foreground/50" />
+              </div>
+            ))
           ) : (
             <p className="px-1 text-sm text-muted-foreground">Aucune génération pour l’instant.</p>
           )}
