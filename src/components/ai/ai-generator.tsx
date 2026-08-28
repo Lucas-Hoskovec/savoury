@@ -178,9 +178,9 @@ export function AiGenerator({ initialHistory }: { initialHistory: AiHistoryItem[
                 }
               }}
           placeholder="Décris ton envie : un plat, des ingrédients, une humeur…"
-          rows={2}
+          rows={1}
           maxLength={500}
-          style={{ fieldSizing: "fixed" } as React.CSSProperties}
+          style={{ minHeight: "44px", maxHeight: "72px" } as React.CSSProperties}
           aria-label="Décris la recette que tu veux"
           className="resize-none overflow-y-auto border-none bg-transparent px-4 pt-3 text-base shadow-none focus-visible:ring-0"
             />
