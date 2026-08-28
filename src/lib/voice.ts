@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
 
 type SpeechRecognitionLike = {
   continuous: boolean;
@@ -26,15 +26,17 @@ interface UseVoiceOptions {
 
 /** Reactive wrapper around the built-in Web Speech API (no external keys). */
 export function useVoice(options: UseVoiceOptions = {}) {
-  const [supported] = useState(
+  const [isListening, setListening] = useState(false);
+
+  const supported = useSyncExternalStore(
+    () => () => {},
     () =>
-      typeof window !== "undefined" &&
       Boolean(
         (window as unknown as { SpeechRecognition?: unknown }).SpeechRecognition ||
           (window as unknown as { webkitSpeechRecognition?: unknown }).webkitSpeechRecognition
-      )
+      ),
+    () => false
   );
-  const [isListening, setListening] = useState(false);
 
   const finalRef = useRef("");
   const recRef = useRef<SpeechRecognitionLike | null>(null);
